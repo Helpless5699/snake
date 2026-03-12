@@ -28,9 +28,16 @@
 
     <script type="module">
       import {
+        ACTIVE_FOOD_COUNT,
+        DEPTH_SIZE,
+        GRID_SIZE,
         createInitialState,
-        placeFood,
+        getConsumableFood,
+        isHorizontalDirection,
+        placeFoods,
+        pickNearestFood,
         queueDirection,
+        resolveViewRelativeDirection,
         startGame,
         stepGame,
       } from "../src/gameLogic.js";
@@ -53,47 +60,127 @@
         }
       }
 
-      test("movement advances the snake head in the current direction", () => {
-        let state = startGame(createInitialState(() => 0));
-        state = stepGame(state, () => 0);
-        assert(state.snake[0].x === 9 && state.snake[0].y === 8, "expected head to move right");
+      function sequenceRandom(values) {
+        let index = 0;
+        return () => {
+          const value = values[Math.min(index, values.length - 1)];
+          index += 1;
+          return value;
+        };
+      }
+
+      test("initial state spawns multiple foods", () => {
+        const state = createInitialState(sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0]));
+        assert(state.foods.length === ACTIVE_FOOD_COUNT, "expected multiple foods on spawn");
       });
 
-      test("eating food grows the snake and increments score", () => {
-        const base = startGame(createInitialState(() => 0));
+      test("arena dimensions form a cube", () => {
+        assert(GRID_SIZE === DEPTH_SIZE, "expected x/y/z lengths to match");
+      });
+
+      test("movement advances the snake head in the current direction", () => {
+        let state = startGame(createInitialState(sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0])));
+        state = stepGame(state, sequenceRandom([0, 0, 0, 0]));
+        assert(state.snake[0].x === Math.floor(GRID_SIZE / 2) + 1, "expected head to move right");
+      });
+
+      test("relative controls resolve from the horizontal first-person view", () => {
+        assert(resolveViewRelativeDirection("right", "up") === "right", "expected forward to keep heading");
+        assert(resolveViewRelativeDirection("right", "left") === "up", "expected local left to become world up");
+        assert(resolveViewRelativeDirection("right", "right") === "down", "expected local right to become world down");
+        assert(resolveViewRelativeDirection("up", "left") === "left", "expected local left when facing up");
+      });
+
+      test("absolute ascend and descend do not replace the horizontal view direction", () => {
+        const base = startGame(createInitialState(sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0])), "right");
+        const climbing = stepGame(
+          {
+            ...base,
+            direction: "ascend",
+            queuedDirection: "ascend",
+          },
+          sequenceRandom([0, 0, 0]),
+        );
+        assert(climbing.direction === "ascend", "expected ascend move to apply");
+        assert(climbing.viewDirection === "right", "expected horizontal view to remain right");
+        assert(isHorizontalDirection(climbing.viewDirection), "expected view direction to stay horizontal");
+      });
+
+      test("food can be consumed when only one layer off in the same column", () => {
+        const food = getConsumableFood(
+          { x: 11, y: 10, z: 10 },
+          [
+            { x: 11, y: 10, z: 11, type: "normal", label: "Normal", score: 1, growth: 1 },
+          ],
+        );
+        assert(food && food.z === 11, "expected layer assist to catch nearby food");
+      });
+
+      test("eating one food refills the active food pool", () => {
+        const base = startGame(createInitialState(sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0])));
         const state = {
           ...base,
-          food: { x: base.snake[0].x + 1, y: base.snake[0].y },
+          foods: [
+            {
+              x: base.snake[0].x + 1,
+              y: base.snake[0].y,
+              z: base.snake[0].z,
+              type: "normal",
+              label: "Normal",
+              score: 1,
+              growth: 1,
+            },
+            ...base.foods.slice(0, ACTIVE_FOOD_COUNT - 1),
+          ],
         };
-        const next = stepGame(state, () => 0);
+        const next = stepGame(state, sequenceRandom([0, 0, 0, 0, 0]));
         assert(next.score === 1, "expected score to increment");
-        assert(next.snake.length === state.snake.length + 1, "expected snake to grow");
+        assert(next.foods.length === ACTIVE_FOOD_COUNT, "expected food slot to refill");
       });
 
-      test("wall collisions end the game", () => {
+      test("shield prevents one wall collision on the expanded map", () => {
         const state = {
-          ...startGame(createInitialState(() => 0)),
-          snake: [{ x: 15, y: 0 }, { x: 14, y: 0 }, { x: 13, y: 0 }],
+          ...startGame(createInitialState(sequenceRandom([0, 0, 0, 0, 0, 0, 0, 0, 0]))),
+          snake: [
+            { x: GRID_SIZE - 1, y: 10, z: 1 },
+            { x: GRID_SIZE - 2, y: 10, z: 1 },
+            { x: GRID_SIZE - 3, y: 10, z: 1 },
+          ],
           direction: "right",
           queuedDirection: "right",
+          shields: 1,
         };
-        const next = stepGame(state, () => 0);
-        assert(next.isGameOver === true, "expected game-over on boundary hit");
+        const next = stepGame(state, sequenceRandom([0, 0, 0]));
+        assert(next.isGameOver === false, "expected shield to block game over");
+        assert(next.shields === 0, "expected shield to be consumed");
       });
 
-      test("reversing direction is ignored", () => {
-        const direction = queueDirection("right", "left");
-        assert(direction === "right", "expected opposite turn to be ignored");
+      test("reversing direction is ignored across dimensions", () => {
+        assert(queueDirection("right", "left") === "right", "expected opposite x movement to be blocked");
+        assert(queueDirection("ascend", "descend") === "ascend", "expected opposite z movement to be blocked");
       });
 
-      test("food placement avoids occupied cells", () => {
+      test("placeFoods avoids occupied cells and existing foods", () => {
         const snake = [
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
-          { x: 0, y: 1 },
+          { x: 0, y: 0, z: 0 },
+          { x: 1, y: 0, z: 0 },
         ];
-        const food = placeFood(snake, 2, () => 0.9);
-        assert(food.x === 1 && food.y === 1, "expected last open cell");
+        const existingFoods = [
+          { x: 0, y: 1, z: 0, type: "normal", label: "Normal", score: 1, growth: 1 },
+        ];
+        const foods = placeFoods(snake, 2, 1, 2, sequenceRandom([0.75, 0.75, 0, 0.2]), existingFoods);
+        assert(foods.length === 2, "expected one new food to be added");
+        assert(foods.some((food) => food.x === 1 && food.y === 1 && food.z === 0), "expected remaining open cell to be used");
+      });
+
+      test("pickNearestFood returns the closest option from multiple foods", () => {
+        const head = { x: 10, y: 10, z: 1 };
+        const nearest = pickNearestFood(head, [
+          { x: 20, y: 20, z: 1 },
+          { x: 12, y: 10, z: 1 },
+          { x: 10, y: 14, z: 3 },
+        ]);
+        assert(nearest.x === 12 && nearest.y === 10, "expected nearest food");
       });
 
       results.innerHTML = output.join("");

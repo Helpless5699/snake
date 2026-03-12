@@ -1,16 +1,16 @@
 :root {
   color-scheme: light;
-  --bg: #f4efe6;
-  --panel: #fffaf2;
-  --panel-border: #d4c5ad;
-  --text: #2d2418;
-  --muted: #766a58;
-  --snake: #30523b;
-  --snake-head: #1f3b28;
-  --food: #c44d2f;
-  --grid: #e6ddcf;
-  --button: #efe3d1;
-  --button-border: #baa78f;
+  --bg: #09111f;
+  --panel: rgba(9, 17, 31, 0.88);
+  --panel-border: rgba(122, 166, 255, 0.24);
+  --text: #ebf2ff;
+  --muted: #8ea4cf;
+  --button: rgba(20, 35, 62, 0.9);
+  --button-border: rgba(126, 165, 246, 0.28);
+  --accent: #6fd3ff;
+  --accent-2: #79f2a3;
+  --danger: #ff7d67;
+  --gold: #ffd166;
 }
 
 * {
@@ -20,9 +20,10 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: "Segoe UI", "Trebuchet MS", sans-serif;
   background:
-    radial-gradient(circle at top, #fffaf2 0, #f4efe6 40%, #ece1d1 100%);
+    radial-gradient(circle at top, rgba(56, 122, 255, 0.2), transparent 30%),
+    linear-gradient(180deg, #08101d 0%, #0d1830 55%, #08101a 100%);
   color: var(--text);
 }
 
@@ -38,11 +39,12 @@ button {
 }
 
 .game-card {
-  width: min(100%, 560px);
+  width: min(100%, 1480px);
   background: var(--panel);
-  border: 2px solid var(--panel-border);
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(65, 50, 30, 0.12);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
   padding: 24px;
 }
 
@@ -52,6 +54,13 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.hud-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .eyebrow {
@@ -70,10 +79,15 @@ h1 {
 .scoreboard {
   min-width: 96px;
   text-align: center;
-  background: #f3eadb;
+  background: rgba(12, 22, 40, 0.95);
   border: 1px solid var(--panel-border);
   border-radius: 14px;
   padding: 10px 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.scoreboard.compact {
+  min-width: 84px;
 }
 
 .scoreboard span {
@@ -106,44 +120,118 @@ h1 {
 .actions button,
 .control-button {
   border: 1px solid var(--button-border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--button);
   color: var(--text);
-  padding: 8px 14px;
+  padding: 10px 14px;
   cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
 }
 
 .actions button:hover,
 .control-button:hover {
-  background: #e7d7c0;
+  background: rgba(31, 52, 89, 0.96);
+  border-color: rgba(130, 192, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.scene-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 3.1fr) minmax(320px, 360px);
+  gap: 18px;
+  align-items: stretch;
 }
 
 .game-board {
-  display: grid;
-  grid-template-columns: repeat(16, minmax(0, 1fr));
-  gap: 2px;
-  aspect-ratio: 1;
-  background: var(--grid);
-  padding: 2px;
-  border-radius: 14px;
+  min-height: 820px;
+  height: min(82vh, 980px);
+  border-radius: 20px;
+  overflow: hidden;
   border: 1px solid var(--panel-border);
+  background:
+    radial-gradient(circle at top, rgba(94, 201, 255, 0.14), transparent 35%),
+    linear-gradient(180deg, rgba(10, 20, 37, 0.95), rgba(7, 14, 27, 0.98));
+  position: relative;
 }
 
-.cell {
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.55);
+.game-board canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.cell.snake {
-  background: var(--snake);
+.info-panel {
+  display: grid;
+  gap: 14px;
 }
 
-.cell.head {
-  background: var(--snake-head);
+.food-legend,
+.tips-card {
+  background: rgba(10, 20, 38, 0.92);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 18px;
 }
 
-.cell.food {
-  background: var(--food);
+.food-legend h2,
+.tips-card h2 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.legend-item + .legend-item {
+  margin-top: 12px;
+}
+
+.legend-item p,
+.tips-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.legend-item strong {
+  color: var(--text);
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.legend-swatch.normal {
+  color: var(--danger);
+  background: var(--danger);
+}
+
+.legend-swatch.shield {
+  color: var(--accent);
+  background: var(--accent);
+}
+
+.legend-swatch.double {
+  color: var(--gold);
+  background: var(--gold);
+}
+
+.legend-swatch.haste {
+  color: var(--accent-2);
+  background: var(--accent-2);
 }
 
 .controls-panel {
@@ -157,7 +245,7 @@ h1 {
 
 .touch-controls {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 88px));
+  grid-template-columns: repeat(3, minmax(0, 120px));
   justify-content: center;
 }
 
@@ -172,6 +260,10 @@ h1 {
     align-items: stretch;
   }
 
+  .hud-group {
+    justify-content: stretch;
+  }
+
   .actions {
     justify-content: stretch;
   }
@@ -182,5 +274,16 @@ h1 {
 
   .touch-controls {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .scene-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .game-board {
+    min-height: 560px;
+    height: min(68vh, 760px);
   }
 }

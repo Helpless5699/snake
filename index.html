@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Classic Snake</title>
+    <title>3D Snake Arena</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -12,35 +12,73 @@
         <div class="game-header">
           <div>
             <p class="eyebrow">Arcade Demo</p>
-            <h1 id="game-title">Snake</h1>
+            <h1 id="game-title">3D Snake Arena</h1>
           </div>
-          <div class="scoreboard" aria-live="polite">
-            <span>Score</span>
-            <strong id="score">0</strong>
+          <div class="hud-group">
+            <div class="scoreboard" aria-live="polite">
+              <span>Score</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="scoreboard compact" aria-live="polite">
+              <span>Shield</span>
+              <strong id="shield-count">0</strong>
+            </div>
+            <div class="scoreboard compact" aria-live="polite">
+              <span>Layer</span>
+              <strong id="layer-indicator">1 / 4</strong>
+            </div>
+            <div class="scoreboard compact" aria-live="polite">
+              <span>Food</span>
+              <strong id="food-count">0</strong>
+            </div>
           </div>
         </div>
 
         <div class="status-row">
-          <p id="status">Press any arrow key or WASD to start.</p>
+          <p id="status">Cubic arena 80 x 80 x 80. WASD/方向键按视角移动，Q/E 直接上下层。</p>
           <div class="actions">
             <button id="pause-button" type="button">Pause</button>
             <button id="restart-button" type="button">Restart</button>
           </div>
         </div>
 
-        <div
-          id="game-board"
-          class="game-board"
-          role="grid"
-          aria-label="Snake game board"
-        ></div>
+        <section class="scene-shell">
+          <div id="game-board" class="game-board" aria-label="3D Snake arena"></div>
+          <aside class="info-panel">
+            <div class="food-legend">
+              <h2>Food Types</h2>
+              <div class="legend-item">
+                <span class="legend-swatch normal"></span>
+                <p><strong>Normal Core</strong> +1 score, +1 length</p>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch shield"></span>
+                <p><strong>Shield Orb</strong> Gain one wall-hit protection</p>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch double"></span>
+                <p><strong>Double Crystal</strong> +3 score, grow by 2</p>
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch haste"></span>
+                <p><strong>Haste Spark</strong> Temporary speed boost</p>
+              </div>
+            </div>
+            <div class="tips-card">
+              <h2>Controls</h2>
+              <p>Move: Arrow keys / WASD (relative to head view)</p>
+              <p>Ascend: Q</p>
+              <p>Descend: E</p>
+            </div>
+          </aside>
+        </section>
 
         <div class="controls-panel">
-          <p class="controls-copy">Keyboard: arrows or WASD</p>
+          <p class="controls-copy">Touch / click controls</p>
           <div class="touch-controls" aria-label="Touch controls">
-            <span></span>
+            <button class="control-button" data-direction="ascend" type="button">Ascend</button>
             <button class="control-button" data-direction="up" type="button">Up</button>
-            <span></span>
+            <button class="control-button" data-direction="descend" type="button">Descend</button>
             <button class="control-button" data-direction="left" type="button">Left</button>
             <button class="control-button" data-direction="down" type="button">Down</button>
             <button class="control-button" data-direction="right" type="button">Right</button>
