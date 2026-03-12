@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Logic Tests</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: Consolas, monospace;
+        background: #111;
+        color: #f5f5f5;
+      }
+
+      .pass {
+        color: #7ddc7a;
+      }
+
+      .fail {
+        color: #ff7a7a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Snake Logic Tests</h1>
+    <div id="results"></div>
+
+    <script type="module">
+      import {
+        createInitialState,
+        placeFood,
+        queueDirection,
+        startGame,
+        stepGame,
+      } from "../src/gameLogic.js";
+
+      const results = document.querySelector("#results");
+      const output = [];
+
+      function assert(condition, message) {
+        if (!condition) {
+          throw new Error(message);
+        }
+      }
+
+      function test(name, callback) {
+        try {
+          callback();
+          output.push(`<p class="pass">PASS: ${name}</p>`);
+        } catch (error) {
+          output.push(`<p class="fail">FAIL: ${name} - ${error.message}</p>`);
+        }
+      }
+
+      test("movement advances the snake head in the current direction", () => {
+        let state = startGame(createInitialState(() => 0));
+        state = stepGame(state, () => 0);
+        assert(state.snake[0].x === 9 && state.snake[0].y === 8, "expected head to move right");
+      });
+
+      test("eating food grows the snake and increments score", () => {
+        const base = startGame(createInitialState(() => 0));
+        const state = {
+          ...base,
+          food: { x: base.snake[0].x + 1, y: base.snake[0].y },
+        };
+        const next = stepGame(state, () => 0);
+        assert(next.score === 1, "expected score to increment");
+        assert(next.snake.length === state.snake.length + 1, "expected snake to grow");
+      });
+
+      test("wall collisions end the game", () => {
+        const state = {
+          ...startGame(createInitialState(() => 0)),
+          snake: [{ x: 15, y: 0 }, { x: 14, y: 0 }, { x: 13, y: 0 }],
+          direction: "right",
+          queuedDirection: "right",
+        };
+        const next = stepGame(state, () => 0);
+        assert(next.isGameOver === true, "expected game-over on boundary hit");
+      });
+
+      test("reversing direction is ignored", () => {
+        const direction = queueDirection("right", "left");
+        assert(direction === "right", "expected opposite turn to be ignored");
+      });
+
+      test("food placement avoids occupied cells", () => {
+        const snake = [
+          { x: 0, y: 0 },
+          { x: 1, y: 0 },
+          { x: 0, y: 1 },
+        ];
+        const food = placeFood(snake, 2, () => 0.9);
+        assert(food.x === 1 && food.y === 1, "expected last open cell");
+      });
+
+      results.innerHTML = output.join("");
+    </script>
+  </body>
+</html>

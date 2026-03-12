@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classic Snake</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-card" aria-labelledby="game-title">
+        <div class="game-header">
+          <div>
+            <p class="eyebrow">Arcade Demo</p>
+            <h1 id="game-title">Snake</h1>
+          </div>
+          <div class="scoreboard" aria-live="polite">
+            <span>Score</span>
+            <strong id="score">0</strong>
+          </div>
+        </div>
+
+        <div class="status-row">
+          <p id="status">Press any arrow key or WASD to start.</p>
+          <div class="actions">
+            <button id="pause-button" type="button">Pause</button>
+            <button id="restart-button" type="button">Restart</button>
+          </div>
+        </div>
+
+        <div
+          id="game-board"
+          class="game-board"
+          role="grid"
+          aria-label="Snake game board"
+        ></div>
+
+        <div class="controls-panel">
+          <p class="controls-copy">Keyboard: arrows or WASD</p>
+          <div class="touch-controls" aria-label="Touch controls">
+            <span></span>
+            <button class="control-button" data-direction="up" type="button">Up</button>
+            <span></span>
+            <button class="control-button" data-direction="left" type="button">Left</button>
+            <button class="control-button" data-direction="down" type="button">Down</button>
+            <button class="control-button" data-direction="right" type="button">Right</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

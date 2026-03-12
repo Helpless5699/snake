@@ -1,0 +1,186 @@
+:root {
+  color-scheme: light;
+  --bg: #f4efe6;
+  --panel: #fffaf2;
+  --panel-border: #d4c5ad;
+  --text: #2d2418;
+  --muted: #766a58;
+  --snake: #30523b;
+  --snake-head: #1f3b28;
+  --food: #c44d2f;
+  --grid: #e6ddcf;
+  --button: #efe3d1;
+  --button-border: #baa78f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top, #fffaf2 0, #f4efe6 40%, #ece1d1 100%);
+  color: var(--text);
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.game-card {
+  width: min(100%, 560px);
+  background: var(--panel);
+  border: 2px solid var(--panel-border);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(65, 50, 30, 0.12);
+  padding: 24px;
+}
+
+.game-header,
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+}
+
+.scoreboard {
+  min-width: 96px;
+  text-align: center;
+  background: #f3eadb;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+
+.scoreboard span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.scoreboard strong {
+  font-size: 1.8rem;
+}
+
+.status-row {
+  margin: 18px 0 16px;
+}
+
+.status-row p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.actions,
+.touch-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button,
+.control-button {
+  border: 1px solid var(--button-border);
+  border-radius: 10px;
+  background: var(--button);
+  color: var(--text);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.actions button:hover,
+.control-button:hover {
+  background: #e7d7c0;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 2px;
+  aspect-ratio: 1;
+  background: var(--grid);
+  padding: 2px;
+  border-radius: 14px;
+  border: 1px solid var(--panel-border);
+}
+
+.cell {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.cell.snake {
+  background: var(--snake);
+}
+
+.cell.head {
+  background: var(--snake-head);
+}
+
+.cell.food {
+  background: var(--food);
+}
+
+.controls-panel {
+  margin-top: 18px;
+}
+
+.controls-copy {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.touch-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 88px));
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .game-card {
+    padding: 18px;
+  }
+
+  .game-header,
+  .status-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .touch-controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
